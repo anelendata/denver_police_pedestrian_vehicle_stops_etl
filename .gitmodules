@@ -1,0 +1,15 @@
+[submodule "etl_utils"]
+	path = etl_utils
+	url = git@github.com:anelendata/etl_utils.git
+[submodule "aws_utils"]
+	path = aws_utils
+	url = git@github.com:anelendata/aws_utils.git
+[submodule "fgops"]
+	path = fgops
+	url = git@github.com:anelendata/fgops.git
+[submodule "tap_rest_api"]
+	path = tap_rest_api
+	url = git@github.com:anelendata/tap_rest_api.git
+[submodule "target-bigquery"]
+	path = target-bigquery
+	url = git@github.com:anelendata/target-bigquery.git
