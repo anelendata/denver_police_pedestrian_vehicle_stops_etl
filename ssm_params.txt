@@ -1,1 +1,7 @@
-list_the_param_names_to_fetch_from_ssm_here
+tap_command
+tap_args
+tap_config
+target_command
+target_args
+target_config
+google_client_secret

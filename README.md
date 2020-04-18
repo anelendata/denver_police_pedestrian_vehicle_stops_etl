@@ -1,15 +1,5 @@
 # Denver Police Pedestrian Vehicle Stops ETL
 
-.. image:: https://img.shields.io/pypi/v/denver_police_pedestrian_vehicle_stops_etl.svg
-        :target: https://pypi.python.org/pypi/denver_police_pedestrian_vehicle_stops_etl
-
-.. image:: https://img.shields.io/travis/daigotanaka/denver_police_pedestrian_vehicle_stops_etl.svg
-        :target: https://travis-ci.org/daigotanaka/denver_police_pedestrian_vehicle_stops_etl
-
-.. image:: https://readthedocs.org/projects/denver-police-pedestrian-vehicle-stops-etl/badge/?version=latest
-        :target: https://denver-police-pedestrian-vehicle-stops-etl.readthedocs.io/en/latest/?badge=latest
-        :alt: Documentation Status
-
 ELT pipeline from Denver Police Pedestrian Stops and Vehicle Stops dataset
 
 * Free software: Apache Software License 2.0
@@ -18,31 +8,47 @@ ELT pipeline from Denver Police Pedestrian Stops and Vehicle Stops dataset
 
 ## Introduction
 
-Write what it does...
+This is a public project to showcase to perform ELT (extract, load, transform) 
+[the city of Denver Police Pedestrian Stops and Vehicle Stops dataset](https://www.denvergov.org/opendata/dataset/city-and-county-of-denver-police-pedestrian-stops-and-vehicle-stops)
+
+The data is loaded to Google BigQuery.
+
+This ETL process follows kinoko.io, a template for creating a docker image
+that runs ETL based on singer.io. The ETL process is intended to be deployed
+to AWS Fargate.
+
+### Extraction and Load
+
+Extraction and Load are done through singer.io framework.
+The EL process is docker-containerized and deployed to AWS Fargate.
+The containerization is based on [ANELEN]'s kinoko.io framework.
+
+### Transformation
+
+Transformation takes place after the data is loaded to BigQuery.
+The transformation is defined as SQL statement and managed by 
+[dbt](https://getdbt.com)
+
+### Data format and REST API
+
+The data follows arcGIS format. The API server is an
+[arcGIS feature-layer](https://developers.arcgis.com/labs/rest/query-a-feature-layer/)
 
 ## File structure
 
 ```
 .
-├── aws_utils: (submodule) Convenience Python module for boto3 commands
+├── README.md: This file
 ├── Dockerfile: A Dockerfile that wraps the code as a single command
+├── aws_utils: (submodule) Convenience Python module for boto3 commands
 ├── etl_utils: (submodule) Misc. tools for ETL tasks
 ├── fgops: (submodule) Fargate operation commands
 ├── impl.py: Implementation of the task
-├── README.md: This file
 ├── requirements.txt: List of required Python modules
 ├── runner.py: Entrypoint for the task
-└── ssm_params.txt: List of AWS SSM Parameters to be retrieved from runner.py
+├── ssm_params.txt: List of AWS SSM Parameters to be retrieved from runner.py
+└── dbt: dbt project directory
 ```
-
-## Fargate deployment via fgops
-
-The repository refers to [fgops](https://github.com/anelendata/fgops) as a submodule.
-fgops are a set of Docker and Cloudformation commands to build and push the docker images to
-ECR, create the ECS task definition, and schedule the events to be executed via Fargate.
-
-fgops requires an environment file. See ____.env____fg as an example. In this document, any variables
-defined in the environment file is referred with as <VAR_NAME>.
 
 ## Executing locally
 
@@ -59,42 +65,65 @@ Create Python virtual environment and install the modules:
 ```
 python3 -m venv ./venv
 source venv/bin/activate
+pip install wheel
+pip install -e ./tap_xxxx
+pip install -e ./target_xxxx
 pip install -r requirements.txt
 ```
+(Replace xxxx with your tap and target names found in this repository)
 
-Define AWS credentials as environment variables:
+
+### Configure tap & target commands
+
+Configure singer.io tap & target commands by referring docs of the installed
+tap and target.
+
+The recommendation is to create .env directory and store the following configuration
+files with the exact name:
+
+- tap_config.json
+- target_config.json
+- (optional) client_secret.json  (Google Cloud Platform key JSON file)
+
+After tap & target command is working locally, run:
+
+```
+./bin/gen_ssm_param_json .env > .env/ssm_param_values.json
+```
+
+`.env/ssm__param_values.json` will be used in the next section.
+
+### AWS configuration
+
+Create a programmatic access user with an appropriate role with AWS IAM.
+The user should have a sufficient permissions to run the process. At minimum,
+AmazonSSMReadOnlyAccess. Obtain the access keys and define AWS credentials and 
+region as environment variables:
 
 ```
 export AWS_ACCESS_KEY_ID=<key>
 export AWS_SECRET_KEY=<secret>
+export AWS_REGION=<region_name>
 ```
 
-### AWS SSM Parameters
+Also define STACK_NAME. This is used as the stack name for cloudformation
+later, and also act as a "name space" for the SSM Parameters explained in
+the next section:
 
-The configurations including the secrets to access source and destination servers 
-are managed with
-[AWS SSM Parameters](https://console.aws.amazon.com/systems-manager/parameters).
+```
+export STACK_NAME=<some-stack-name>
+```
 
-You need to list the parameter names in ssm_params.txt. Then the parameters must 
-be stored in SSM with the parameter name prefix <STACK_NAME>_.
-The values are retrieved during the initialization.
+#### AWS SSM Parameters
+
+[AWS SSM Parameter Store](https://console.aws.amazon.com/systems-manager/parameters)
+is used to pass the tap & target configurations and other secrets such as
+GCP key. In SSM, the parameters are stored in <STACK_NAME>_<param_name> format.
 
 A convenience function to upload the parameters from a local JSON file is
-provided. To do this, first create a JSON file to define the parameter name and
-value:
+provided. We have created such a JSON file in the previous step (`.env/ssm_param_values.json`)
 
-For example,
-
-```
-{
-  "tap_command": "tap_bigquery",
-  "tap_args": "--config .env/tap_config.json --catalog ./catalog/default_catalog.json --start_date '{start_at}' --end_date '{end_at}'",
-  "target_command": "target_pardot",
-  "target_args": "--config .env/target_config.json",
-  "tap_config": "{\"streams\": [{\"name\": \"schema_name\",}]}",
-  "target_config": "{\"api_key\": \"xxxx\", \"secret\": \"xxxx\"}",
-}
-```
+(Take a look inside the JSON file)
 
 Note that you can embed JSON by escaping quotation character as in the above example.
 This is extensively used in singer.io use cases to write out the tap/target configuration
@@ -108,9 +137,7 @@ When kinoko.io is used with singer.io, these parameters are reserved:
 - google_client_secret: An escapted JSON of the client secret file of a
   [GCP service account](https://cloud.google.com/kubernetes-engine/docs/tutorials/authenticating-to-cloud-platform)
 
-
-After creating the JSON file, run this convenience function to upload the value 
-to SSM:
+Run this convenience function to upload the value to SSM:
 
 ```
 python runner.py put_ssm_parameters -d '{"param_file":"<path_to_JSON>"}'
@@ -122,7 +149,19 @@ You can check the currently stored values by dump command:
 python runner.py dump_ssm_parameters -d '{"param_file":"./ssm_params.txt"}'
 ```
 
-(Make sure ./ssm_params.txt reflect the parameter names.)
+You also need to list the parameter names in ssm_params.txt that looks like:
+
+```
+tap_command
+tap_args
+tap_config
+target_command
+target_args
+target_config
+google_client_secret
+```
+
+(TODO: query SSM parameters with STACK_NAME so that we don't need to prepare ssm_params.txt)
 
 ### Run
 
@@ -144,7 +183,15 @@ view.
 
 ## Execute in a Docker container
 
-Build the image:
+### Fargate deployment via fgops
+
+The repository refers to [fgops](https://github.com/anelendata/fgops) as a submodule.
+fgops are a set of Docker and CloudFormation commands to build and push the docker images to
+ECR, create the ECS task definition, and schedule the events to be executed via Fargate.
+
+fgops requires an environment file. See [_env_fg](./fgops/_.env_fg) as an example. 
+
+### Build the image
 
 ```
 ./fgops/docker-task.sh build 0.1 .env_fg 
@@ -156,7 +203,7 @@ Note: "0.1" here is the image version name. You decide what to put there.
 docker run --env-file <env_file_name> <IMAGE_NAME>
 ```
 
-You need to define
+Like the way you defined when running locally, you need to define
 
 ```
 STACK_NAME
@@ -165,23 +212,25 @@ AWS_SECRET_KEY
 AWS_REGION
 ```
 
-in <env_file_name> file.
+in <env_file_name> file to pass on to Docker contianer.
 
 By default, Dockerfile is configured to execute `python runner.py default`.
 
-Or you can specify the function to run together with the data via environment
-variable:
+Or you can specify the function to run together with the data via additional
+environment variables in <env_file_name>:
 
 ```
 COMMAND=show_commands
 DATA={"start_at":"1990-01-01T00:00:00","end_at":"2030-01-01T00:00:00"}
 ```
 
-...that would be picked up by Docker as
+...that would be picked up by Docker just as
 
 ```
 CMD python3 runner.py ${COMMAND:-default} -d ${DATA:-{}}
 ```
+
+See [Dockerfile](./Dockerfile) for details.
 
 ## Pushing the image and create the ECS task
 

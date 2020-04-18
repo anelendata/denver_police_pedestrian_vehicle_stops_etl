@@ -1,0 +1,19 @@
+#!/bin/bash
+
+if [ "$#" -ne 1 ]; then
+    echo "usage: gen_ssm_param_json <env_dir>  # env_dir should contain tap_config.json, target_config.json, and client_secret.json"
+    exit -1
+fi
+
+CONFIG_DIR=$1
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+echo '{'
+echo '  "tap_command": "'`ls |grep tap`'",'
+echo '  "tap_args": "'"rest_api_spec/default.json --config .env/tap_config.json --schema_dir ./schema --catalog ./catalog/default.json --start_datetime '{start_at}' --end_datetime '{end_at}'"'",'
+echo '  "target_command": "'`ls |grep target`'",'
+echo '  "target_args": "--config .env/target_config.json",'
+echo '  "tap_config": "'`${DIR}/escapejson ${CONFIG_DIR}/tap_config.json`'",'
+echo '  "target_config": "'`${DIR}/escapejson ${CONFIG_DIR}/target_config.json`'",'
+echo '  "google_client_secret": "'`${DIR}/escapejson ${CONFIG_DIR}/client_secret.json`'"'
+echo '}'

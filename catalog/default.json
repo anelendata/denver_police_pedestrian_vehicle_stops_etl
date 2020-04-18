@@ -1,0 +1,111 @@
+{
+  "streams": [
+    {
+      "stream": "odc_crime_stops_p",
+      "tap_stream_id": "odc_crime_stops_p",
+      "schema": {
+        "selected": true,
+        "type": "object",
+        "properties": {
+          "MASTER_INCIDENT_NUMBER": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "PRIORITY_DESCRIPTION": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "PROBLEM": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "ADDRESS": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "CALL_CLASS": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "TIME_PHONEPICKUP": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "CALL_DISPOSITION": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "GEO_X": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "GEO_Y": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "GEO_LON": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "GEO_LAT": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "DISTRICT_ID": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "PRECINCT_ID": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "NEIGHBORHOOD_NAME": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "OBJECTID": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "_etl_tstamp": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          }
+        },
+        "selected": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "url":"https://services1.arcgis.com/zdB7qR0BtYrg0Xpl/ArcGIS/rest/services/ODC_CRIME_STOPS_P/FeatureServer/32/query?where=date+%27{start_datetime}%27+%3C%3D+TIME_PHONEPICKUP+and+TIME_PHONEPICKUP+%3C++date+%27{end_datetime}%27+&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&distance=0.0&units=esriSRUnit_Meter&returnGeodetic=false&outFields=MASTER_INCIDENT_NUMBER%2CPRIORITY_DESCRIPTION%2CPROBLEM%2CADDRESS%2CCALL_CLASS%2CTIME_PHONEPICKUP%2CTIME_PHONEPICKUP%2CCALL_DISPOSITION%2CGEO_X%2CGEO_Y%2CGEO_LON%2CGEO_LAT%2CDISTRICT_ID%2CPRECINCT_ID%2CNEIGHBORHOOD_NAME&returnGeometry=true&featureEncoding=esriDefault&multipatchOption=xyFootprint&maxAllowableOffset=&geometryPrecision=&outSR=&datumTransformation=&applyVCSProjection=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnQueryGeometry=false&returnDistinctValues=false&cacheHint=false&orderByFields=TIME_PHONEPICKUP+ASC&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset={current_offset}&resultRecordCount={items_per_page}&returnZ=false&returnM=false&returnExceededLimitFeatures=true&quantizationParameters=&sqlFormat=standard&f=pjson&token=",
+  "auth_method": "no_auth",
+  "schema_dir": "../../schemas",
+  "catalog_dir": "../../catalogs",
+  "streams": "odc_crime_stops_p",
+  "timestamp_key": "TIME_PHONEPICKUP",
+  "record_list_level": "features",
+  "record_level": "attributes"
+}
